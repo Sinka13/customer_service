@@ -13,3 +13,19 @@
  *= require_tree .
  *= require_self
  */
+
+@import "bootstrap";
+@import "font-awesome";
+.box-header {
+  background-color: #f7f7f9;
+  padding: 3px 15px 0px 15px;
+  color: #0275d8;
+  font-size: 20px;
+}
+.horizontal-divider {
+    width: 100%;
+    border-bottom: 1px solid rgba(34, 36, 38, 0.15);
+  }
+.box {
+  border-right: 4px solid #0275d8;
+}

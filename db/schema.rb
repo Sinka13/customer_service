@@ -17,8 +17,10 @@ ActiveRecord::Schema.define(version: 20170225154417) do
     t.string   "status"
     t.string   "hash_id"
     t.integer  "sender_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "assignee_id"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["assignee_id"], name: "index_issues_on_assignee_id", using: :btree
     t.index ["hash_id"], name: "index_issues_on_hash_id", using: :btree
     t.index ["sender_id"], name: "index_issues_on_sender_id", using: :btree
   end

@@ -1,0 +1,97 @@
+.panel.panel-default
+  .panel-heading
+    .row
+      .col-md-12
+        h4.pull-left Messages
+        = link_to admin_issues_parse_path, class: "btn btn-default btn-md pull-right" do 
+          i.fa.fa-refresh  Syncronize with email
+  .panel-body  
+    .row
+      .col-md-4.btn-group
+        - @btns_first_row.each do |status, value|
+          - if status == :all
+            = link_to "#{value}", {action: :index, s: status }, class: "btn  #{ status.to_s == params[:s] ? 'btn-info' : 'btn-default' }"
+          - else
+            = link_to "#{value}", {action: :index, s: status, assignee_id: params[:assignee_id], subj: params[:subj], ms_user: params[:ms_user] }, class: "btn  #{ status.to_s == params[:s] ? 'btn-info' : 'btn-default' }"
+      .col-md-2.offset-md-3
+        .dropdown
+          a{class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"}
+            - if params[:assignee_id].present? 
+              = MESSAGE_SYSTEM_ASSIGNEE_LIST.invert[params[:assignee_id].to_i]
+            - else
+              | Select assignee
+          ul{class="dropdown-menu" aria-labelledby="dropdownMenuLink"}
+            li
+              = link_to "All assignees", {action: :index, s: params[:s] }, class: "dropdown-item"
+            - MESSAGE_SYSTEM_ASSIGNEE_LIST.each do |assignee, id|
+              li
+                = link_to "#{assignee} (#{@threads.unscoped.opened.assigned_to(id).size}|#{@threads.unscoped.resolved.assigned_to(id).size})", {action: :index, assignee_id: id, s: params[:s] }, class: "dropdown-item"
+  table.table.table-responsive.table-hover.table-striped
+    thead 
+      tr
+      th.col-md-2 Subject
+      th.col-md-8 Message
+      th.col-md-2 Actions
+    tbody 
+      - @threads.each_with_index do |thread, index|
+        - ms_user = thread.ms_user
+        - last_thread_message = thread.messages.latest.first
+        / find donor
+        - highlight = thread.is_open ? ( ms_user&.user&.donor.present? ? "donor_issue" :  "unresolved" ) : nil
+        tr{class="#{highlight}"}
+          td
+            span{ class= "label #{set_tag_class(thread.subject)}"} = thread.subject
+            br
+            = link_to "#{ms_user.username}", admin_plugins_message_system_messages_path(ms_user: ms_user.id)
+            br
+            = ms_user.email
+            br
+            = thread.updated_at
+          td{data-toggle="collapse" class="thread_messages" data-parent="#accordion" href="#collapse#{index}" aria-expanded="true" aria-controls="collapse#{index}" style="cursor: pointer;"}
+            = hidden_field_tag :toggle_thread_id, thread.id
+            div{id="accordion" role="tablist" aria-multiselectable="true"} 
+              .card
+                div{class="card-header" role="tab" id="heading#{index}"}
+                  h5.mb-0
+                    = truncate(last_thread_message.description, length: 150)
+          td
+            - if thread.is_open
+              .btn-group.pull-right
+                = link_to "Resolve", plugins_message_system_resolve_path(id: thread.id), class: "btn btn-default btn-sm", method: 'post' 
+                = link_to admin_plugins_message_system_destroy_thread_path(id: thread.id), class: "btn btn-danger btn-sm", method: 'delete' do 
+                  i.fa.fa-trash.fa-lg
+            - else
+              = link_to admin_plugins_message_system_destroy_thread_path(id: thread.id), class: "btn btn-danger btn-sm pull-right", method: 'delete' do 
+                i.fa.fa-trash
+        tr
+          td{style="padding: 0px !important"}
+          td{style="padding: 0px !important"}
+            div{id="collapse#{index}" class="collapse" role="tabpanel" aria-labelledby="heading#{index}"}
+              .card-block
+                = render partial: "plugins/message_system/partials/reply", locals: {thread: thread, ms_user: ms_user}
+          td{style="padding: 0px !important"}
+  br 
+= stylesheet_link_tag \
+    plugin_asset_path("messages"),
+    media: 'all', 'data-turbolinks-track' => true
+    
+//TODO only one toggle open at time 
+javascript:
+  $('.thread_messages').on('click', function(){
+    console.log("click");
+    var thread = $(this); 
+    $('.messages').animate({scrollTop: 150000},500)
+    setTimeout(function(){
+      console.log($(thread).hasClass('collapsed'));
+      if ($(thread).hasClass('collapsed') == false)
+      {
+        console.log("open");
+        $.ajax({
+          url: "read_messages",
+          type: "POST",
+          data: {
+                  'id': $(thread).find('#toggle_thread_id').val() },
+                })
+      }
+    }, 1000)
+  })

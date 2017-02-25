@@ -1,0 +1,13 @@
+- messages = issue.messages
+div{id="issue-#{issue.id}" class="tab-pane" role="tabpanel"}
+  .row
+    .col-md-12
+      = form_tag issue_messages_path(issue_id: issue.id), remote: true
+        .form-group
+          = hidden_field_tag :issue_id , issue.id  
+        div{id="conversation_body_#{issue.id}"}
+          ul.messages
+            = render messages
+        .form-group.row
+          = text_area_tag "description",nil, rows: 5, placeholder: "Write your message here", class: "col-md-12 form-control message-description", required: true
+        = submit_tag "Send Message", anchor: "issue-#{issue.id}", class: "btn btn-primary btn-xs pull-right"

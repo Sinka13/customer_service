@@ -5,10 +5,12 @@ class CreateIssues < ActiveRecord::Migration[5.0]
       t.string :status
       t.string :hash_id
       t.integer :sender_id
+      t.integer :assignee_id
 
       t.timestamps
     end
     add_index :issues, :hash_id
     add_index :issues, :sender_id
+    add_index :issues, :assignee_id
   end
 end

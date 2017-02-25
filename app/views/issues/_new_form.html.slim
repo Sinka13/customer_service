@@ -1,0 +1,10 @@
+div{class="tab-pane active" id="new" role="tabpanel"}
+  .row
+    .col-md-11
+      = form_tag issues_path
+        = hidden_field_tag :sender_id, current_user&.id
+        .form-group.row
+          = label_tag "message[body]", "Message:"
+          = text_area_tag "message[body]", nil, class: "form-control", rows: 5, placeholder: "Write you message here", required: true
+        .row
+          = submit_tag "Send Message", class: "btn btn-primary btn-xs"

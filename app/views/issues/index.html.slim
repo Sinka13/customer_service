@@ -1,0 +1,38 @@
+.row#notification
+
+.row
+  .issue_window
+    .row
+      .col-md-3.issues_list
+        ul class="nav nav-pills nav-justified flex-column" role="tablist"
+          li.nav-item.main-nav
+            a href="#new" data-toggle="tab" class="nav-link active" New issue
+          - @issues.each do |issue|
+            - messages = issue.messages.unread(current_user)
+            li.nav-item
+              = link_to "#issue-#{issue.id}", class: "nav-link issue-name", data: {toggle: "tab"} do
+                = "#{set_resipient(issue).username} "
+                - if messages.count > 0
+                  span.badge.badge-pill.badge-info{id = "#{issue.id}"} = "#{messages.count}"
+      .col-md-9.tab-content.conversation_body
+        = render 'new_form'
+        - @issues.each do |issue|
+          = render 'form', issue: issue
+  
+
+javascript:
+  
+    $('a.nav-link.issue-name').on('click',function(){
+      $('.messages').animate({scrollTop:10000});
+    });
+
+    var url = document.location.toString();
+    console.log(url);
+    if (url.match('/?')) {
+      $('li.nav-item a[href="#' + url.split("?")[1].replace("=","-") + '"]').tab('show');
+    }
+    //Change hash for page-reload
+    $('li.nav-item a[href="#' + url.split("?")[1].replace("=","-") + '"]').on('shown', function (e) {
+        window.location.hash = e.target.hash;
+    }); 
+    
